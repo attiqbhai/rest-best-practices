@@ -434,3 +434,10 @@ We like `limit` and `offset`, although the data values that the implementation h
     Content-Length: nnnn
     
     // body goes here //
+
+## Response to a method that the server does not support
+The 405 error code indicating that the client tried to use a method that the server does not support for the given resource must be paired with an Allow header saying which methods are supported for the resource.
+
+    HTTP/1.1 405 Method Not Allowed
+    
+    Allow: GET, DELETE, PATCH
