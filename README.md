@@ -351,3 +351,77 @@ As you can see, the server recognized that returning the whole collection wasn�
 The first page contains a subset of the collection contents, references the original collection in the pageOf property, and also references the subsequent page in the next property (unless there is no next page). There is also a previous property that is missing in this case because there is no page before the first one.
 
 There is no standard for the representation of pages of collections shown here—we offer it in the spirit of a minimalist approach that uses JSON in a simple, direct way. There are many other approaches out there.
+
+## Supporting multiple formats
+If you support multiple output formats, you should do so by supporting the standard `HTTP Accept` header.
+## Javascript Object Notation PATCH
+
+    https://www.rfc-editor.org/rfc/pdfrfc/rfc6902.txt.pdf
+
+## PATCH OR PUT
+The reason you should use PATCH for update is that it helps with the evolution of your API. PUT requires the client to replace the entire content of the resource with every update. As your API evolves, you want to be able to add new properties without breaking existing clients. If clients replace the entire content on every update, you are relying on them to faithfully preserve all properties, even if they weren’t changed and even if they didn’t exist at the time the client was written.
+
+## What about property names?
+You have an object with data attributes on it. How should you name the attributes?
+
+Here are API responses from a few leading APIs:
+
+Twitter:
+
+    “created_at”: “Thu Nov 03 05:19;38 +0000 2011”
+Bing:
+
+    “DateTime”: “2011-10-29T09:35:00Z”
+Foursquare:
+
+    “createdAt”: 1475795458
+
+## Date and time formats
+The format we see used most often is the one standardized by XML Schema, which is a subset of the complex ISO 8601 standard. Bing seems to be using this. 
+
+Unix had a wonderfully simple and elegant time format that was based on the number of milliseconds elapsed since the beginning of the epoch—defined to be the beginning of 1970, GMT. Foursquare seems to be using this format. 
+
+This terrifically simple representation—a monotonically-increasing integer that was independent of location and could be differenced to calculate time intervals—made an ideal time representation until it was undermined by a very poor design decision that was made when implementing leap seconds in Unix.
+
+The sad story is told here and elsewhere. Even though it is now compromised, this format deserves consideration as a date and time representation.
+
+## Partial response
+Partial response allows you to give application developers just the information they need.
+
+Let’s look at how several leading APIs handle giving application developers just what they need in responses.
+
+LinkedIn:
+
+    /people:(id,first-name,last-name,industry)
+
+Facebook:
+
+    /joe.smith/friends?fields=id,name,picture
+
+Google:
+
+    ?fields=title,media:group(media:thumbnail)
+
+Google and Facebook have a similar approach, which works well.
+
+They each have an optional parameter called fields after which you put the names of fields you want to be returned.
+
+As you see in this example, you can also put subobjects in responses to pull in other information from additional resources.
+
+## Make it easy for application developers to paginate objects in a database
+
+In a previous section, we showed how you can use `next`, `previous`, `first`, and `last` links to allow API clients to scroll through large lists very simply without the need to construct URLs from complex URI templates. 
+This is often sufficient for handling collections, but occasionally you may want to allow clients more explicit control over pagination.
+
+Let’s look at how Facebook, Twitter, and LinkedIn handle pagination. Facebook uses `offset` and `limit`. Twitter uses `page` and `rpp` (records per page). LinkedIn uses `start` and `count`.
+
+Semantically, Facebook and LinkedIn do the same thing. That is, the LinkedIn `start` and `count` is used in the same way as the Facebook `offset` and `limit`.
+
+To get records 50 through 75 from each system, you would use:
+
+ - Facebook - offset 50 and limit 25 
+ - Twitter - page 3 and rpp 25 (records per page) 
+ - LinkedIn - start 50 and count 25
+
+We like `limit` and `offset`, although the data values that the implementation has to sort on, and the database technologies being used may dictate compromises.
+
