@@ -63,3 +63,13 @@ In this example, this is probably OK, but you do need to be thoughtful about typ
 
 The only motivation for having person appear in a permalink URL at all is for the server to be able to route incoming requests to the right part of the implementation.
 
+## Designing query URLs
+Query URLs are to HTTP what queries are to a database management system.
+
+We described earlier the popular pattern of defining query URLs that looks like
+
+    https://dogtracker.com/persons/{personId}/dogs
+rather than the following equivalent
+
+    https://dogtracker.com/search?type=Dog&owner={personId}
+
