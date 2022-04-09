@@ -84,3 +84,81 @@ The resource identified by this query URL is a resource whose canonical URL migh
     https:// dogtracker.com/ person/98765
 
 The query URL encodes a graph query, because it requires first locating the dog whose ID is 123456, and then navigating the owner relationship (a graph edge) to get to the owner, followed by the spouse relationship. These sorts of queries are very natural to express in a URL as a sequence of path segments, but much more difficult to express in query parameters.
+
+##  Filtering collections
+It has been traditional to put more complex query clauses that filter collections after the ? in the query string portion of the URL. For example, to get all red dogs running in the park looks like this:
+
+    /dogs?color=red&state=running&location=park
+The use of query URLs based on paths and query string parameters can be combined, as shown in this example:
+
+    /persons/5678/dogs?color=red
+
+## What about responses that don’t involve persistent resources?
+API calls that return a response that is not the representation of a persistent resource are common.
+
+Words like the following are your clue that you might not be dealing with a persistent resource response:
+ - Calculate 
+ - Translate 
+ - Convert
+
+For example, say you want to make a simple algorithmic calculation like how much tax someone should pay, or do a natural language translation (one language in the request; another in the response), or convert one currency to another. None involve persistent resources returned from a database.
+
+In these cases, it is not necessary to depart from our noun-based, document-based model. The key insight is that the URL should identify the resource in the response, not the processing _algorithm_ that calculates the response.
+
+Since the resource whose representation is in the response is a thing, it is easy to invent a URL for it that fits the noun-based entity model of the web. From the client’s perspective, it is not relevant whether the result is calculated or retrieved from a database, and indeed it is common for calculated resources to be subsequently stored in a persistent cache for performance.
+
+For example, an API to convert 100 euros to Chinese Yuan:
+
+    /monetary-amount?quantity=100&unit=EUR&in=CNY
+or simply
+
+    /monetary-amount/100/EUR/CNY
+
+The resource in the response is an amount of money expressed in a currency, which is a thing you can identify with a noun or noun phrase. You could also implement this example using content negotiation:
+
+Request:
+
+    GET /monetary-amount/100/EUR HTTP/1.1
+    Host: currency-converter.com
+    Accept-Currency:CNY
+Response:
+
+    HTTP/1.1 200 OK
+    Content-Length: 9
+    683.92CNY
+
+A third solution for this sort of situation is to POST to some noun-based URL. For example:
+
+Request:
+
+    POST /currency-converter HTTP/1.1
+    Host: currency-converter.com
+    Content-Length: 69
+    {
+    	:amount”: 100,
+    	“inputCurrency”: “EUR”,
+    	“outputCurrency”: “CNY”
+    }
+
+Response:
+
+    HTTP/1.1 200 OK
+    Content-Length: 5
+    
+    683.92
+
+This approach feels very natural to many people, and if this is the best solution for your situation, you can certainly use it. However, it has two downsides you should think about:
+
+ - The response is not cacheable using standard HTTP mechanisms. You can
+   make up your own system for caching the response in your application,
+   but to do that you will have to assign a key—an identity—to the
+   response.
+ - When you use the POST pattern discussed here, you are beginning to
+   stray from the uniform interface model, because each entity you POST
+   to typically has its own unique inputs and outputs that are not
+   deducible from a broader data model that underpins a whole set of
+   operations. This can quickly begin to look more like the wider, more
+   complex interfaces you see in RPC as described in the section Why is
+   a data-oriented approach useful?
+
+You should feel free to use POST in this way if it is the best solution to your problem, but you should not do so if there is a straightforward way to use GET instead, especially if the GET can be designed to address a resource from a data model that underpins other operations of the API.
