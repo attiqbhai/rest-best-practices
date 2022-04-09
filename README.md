@@ -63,7 +63,7 @@ In this example, this is probably OK, but you do need to be thoughtful about typ
 
 The only motivation for having person appear in a permalink URL at all is for the server to be able to route incoming requests to the right part of the implementation.
 
-## Designing query URLs
+## Designing Query URLs
 Query URLs are to HTTP what queries are to a database management system.
 
 We described earlier the popular pattern of defining query URLs that looks like
@@ -73,3 +73,14 @@ rather than the following equivalent
 
     https://dogtracker.com/search?type=Dog&owner={personId}
 
+This style of query URL can easily express graph traversal queries that are difficult to express in the query parameter style.
+
+An example that illustrates the last point is this:
+
+    https://dogtracker.com/dogs/123456/owner/spouse
+
+The resource identified by this query URL is a resource whose canonical URL might be 
+
+    https:// dogtracker.com/ person/98765
+
+The query URL encodes a graph query, because it requires first locating the dog whose ID is 123456, and then navigating the owner relationship (a graph edge) to get to the owner, followed by the spouse relationship. These sorts of queries are very natural to express in a URL as a sequence of path segments, but much more difficult to express in query parameters.
