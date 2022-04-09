@@ -425,3 +425,12 @@ To get records 50 through 75 from each system, you would use:
 
 We like `limit` and `offset`, although the data values that the implementation has to sort on, and the database technologies being used may dictate compromises.
 
+## Response to a successful GET
+
+    HTTP/1.1 200 OK
+    Content-Location: https://dogtracker.com/dogs/1234567
+    Content-Type: application/json
+    ETag: 1437080173827
+    Content-Length: nnnn
+    
+    // body goes here //
