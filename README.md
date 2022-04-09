@@ -51,3 +51,15 @@ This URL is very useful for finding Joe, and it is an attractive URL for inclusi
 	}
 
 This isn’t a beautiful URL, but that doesn’t matter too much because being able to parse URLs in links is not important for users. The URL whose format is more visible to the API user is the query URL derived from the URI template.
+
+## Stability of types
+In the last example, we used 
+
+    https://dogtracker.com/person/e9cdcf7a-25b3-11e5- 34363bd0ac10 
+
+as the stable, permanent URL used for linking for Joe. This is based on the assumption that being of type person is a stable property. 
+
+In this example, this is probably OK, but you do need to be thoughtful about types because some types are more stable than others. A person does not change into a dog or a mouse (except perhaps figuratively), but hunters turn into prey, politicians turn into lobbyists, clients are also servers and so on (note that the last example shows that a single resource can have more than one type). 
+
+The only motivation for having person appear in a permalink URL at all is for the server to be able to route incoming requests to the right part of the implementation.
+
