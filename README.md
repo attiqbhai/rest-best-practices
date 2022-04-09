@@ -297,3 +297,57 @@ An even simpler option would have been to omit the outer JSON object that define
 While we’re all for simplicity, we think the extra structure in the first version is worth it.
 
 Others have proposed specialized media types for JSON collections, like `Collection+JSON`. For our own APIs, we think this media type and its protocols introduce too much complexity for the benefit they bring. If you do believe that this media type will work well for your clients and your scenarios, we see no fundamental objection.
+
+## Paginated collections
+Here is an HTTP message exchange that illustrates one way we have handled pagination in the past:
+
+Request:
+
+    GET /dogs HTTP/1.1
+    Host: dogtracker.com
+    Accept: application/json
+
+Response:
+
+    HTTP/1.1 303 See Other
+    Location: https://dogtracker.com/dogs?limit=25,offset=0
+
+Request:
+
+    GET /dogs?limit=25,offset=0 HTTP/1.1
+    Host: dogtracker.com
+    Accept: application/json
+
+Response:
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Content-Location: https://dogtracker.com/dogs?limit=25,offset=0
+    Content-Length: 23456
+    {
+    	“self”: “https://dogtracker.com/dogs?limit=25,offset=0”,
+    	“kind”: “Page”,
+    	“pageOf”: “https://dogtracker.com/dogs”,
+    	“next”: “https://dogtracker.com/dogs?limit=25,offset=25”,
+    	“contents”: [
+    		{
+    			“self”: “https://dogtracker.com/dogs/12344”,
+    			“kind”: “Dog”,
+    			“name”: “Fido”,
+    			“furColor”: “white”
+    		},
+    		{
+    			“self”: “https://dogtracker.com/dogs/12345”,
+    			“kind”: “Dog”,
+    			“name”: “Rover”,
+    			“furColor”: “brown”
+    		},
+    		… (23 more)
+    	]
+    }
+
+As you can see, the server recognized that returning the whole collection wasn’t going to work, and redirected the client to a different resource that represents the first page of the collection. The client followed the redirect, which returned the first page.
+
+The first page contains a subset of the collection contents, references the original collection in the pageOf property, and also references the subsequent page in the next property (unless there is no next page). There is also a previous property that is missing in this case because there is no page before the first one.
+
+There is no standard for the representation of pages of collections shown here—we offer it in the spirit of a minimalist approach that uses JSON in a simple, direct way. There are many other approaches out there.
