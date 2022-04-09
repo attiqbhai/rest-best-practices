@@ -240,3 +240,60 @@ This approach feels very natural to many people, and if this is the best solutio
    a data-oriented approach useful?
 
 You should feel free to use POST in this way if it is the best solution to your problem, but you should not do so if there is a straightforward way to use GET instead, especially if the GET can be designed to address a resource from a data model that underpins other operations of the API.
+
+##  Include self-reference and kind properties
+The Google and GitHub examples illustrate two additional design choices that we like. The first is including a `kind` property (sometimes spelled type, or isA). The second is including a `selfLink` property, which is called `url` in the GitHub example. 
+
+Many different spellings of this property are in use— we like the name `self` which is the relationship name standardized in the ATOM specification, registered in IANA, and copied by many others.
+
+Notice particularly that these properties apply to every JSON object, not just the top-level one.
+
+## Why are the self and the kind properties good ideas?
+Including a self property makes it explicit what web resource’s properties we are talking about without requiring contextual knowledge—like what URL did you perform a GET on to retrieve this representation—or application-specific knowledge. This is especially important for nested JSON objects where the outer context doesn’t help establish what resource we’re talking about, but it is good practice everywhere.
+
+Including a kind property helps clients recognize whether or not this is an object they know how to process. This helps you add new concepts to your API without having to change the API version.
+
+## How should I represent collections?
+Collections are resources too, so the recommendations we have established thus far for all resources also apply to collections.
+
+For example, use the simplest form of JSON, and give them a self property and a kind property. Here is an example of the collection of all dogs:
+
+    {
+    	“self”: “https://dogtracker.com/dogs”,
+    	“kind”: “Collection”,
+    	“contents”: [
+    		{
+    			“self”: “https://dogtracker.com/dogs/12344”,
+    			“kind”: “Dog”,
+    			“name”: “Fido”,
+    			“furColor”: “white”
+    		},
+    		{
+    			“self”: “https://dogtracker.com/dogs/12345”,
+    			“kind”: “Dog”,
+    			“name”: “Rover”,
+    			“furColor”: “brown”
+    		}
+    	]
+    }
+
+An even simpler option would have been to omit the outer JSON object that defines the collection as a resource, like this:
+
+    [
+      		{
+      			“self”: “https://dogtracker.com/dogs/12344”,
+      			“kind”: “Dog”,
+      			“name”: “Fido”,
+      			“furColor”: “white”
+      		},
+      		{
+      			“self”: “https://dogtracker.com/dogs/12345”,
+      			“kind”: “Dog”,
+      			“name”: “Rover”,
+      			“furColor”: “brown”
+      		}
+    ]
+
+While we’re all for simplicity, we think the extra structure in the first version is worth it.
+
+Others have proposed specialized media types for JSON collections, like `Collection+JSON`. For our own APIs, we think this media type and its protocols introduce too much complexity for the benefit they bring. If you do believe that this media type will work well for your clients and your scenarios, we see no fundamental objection.
